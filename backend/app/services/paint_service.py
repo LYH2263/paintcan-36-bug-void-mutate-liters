@@ -25,11 +25,12 @@ class PaintService:
         return _parse_run(runs.get(self._c, run_id))
     def void_run(self, run_id):
         if not runs.get(self._c, run_id): return None
-        runs.mark_void(self._c, run_id)
+        if not runs.mark_void(self._c, run_id): return False
         return self.get_run(run_id)
     def remeasure(self, run_id):
         old = runs.get(self._c, run_id)
         if not old: return None
+        # Always insert a fresh run pinned to current room params/defaults; linking never mutates the old row's values.
         r = self.estimate(old["room_id"], persist=True, supersedes_id=run_id)
         if not r: return None
         runs.mark_void(self._c, run_id)

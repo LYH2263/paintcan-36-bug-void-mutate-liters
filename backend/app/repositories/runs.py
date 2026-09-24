@@ -20,14 +20,12 @@ def list_recent(conn, limit=50, include_voided=False):
 
 def mark_void(conn, run_id):
     row = get(conn, run_id)
-    if not row:
+    if not row or row["voided"]:
         return False
-    from app.services.void_side_effects import zero_result_json
-    cleared = zero_result_json(row.get("result_json") or "{}")
-    # allow repeat void: no voided=0 guard
+    # Voiding only flips visibility flags; the pinned result_json must stay byte-for-byte intact.
     cur = conn.execute(
-        "UPDATE calc_runs SET voided=1, voided_at=?, result_json=? WHERE id=?",
-        (_now(), cleared, run_id),
+        "UPDATE calc_runs SET voided=1, voided_at=? WHERE id=? AND voided=0",
+        (_now(), run_id),
     )
     conn.commit()
     return cur.rowcount > 0

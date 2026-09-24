@@ -13,11 +13,7 @@ const load = async () => {
 }
 onMounted(load)
 watch(() => route.params.id, load)
-const liters = computed(() => {
-  if (!run.value?.result) return 0
-  if (run.value.voided) return run.value.result.liters ?? 0
-  return run.value.result.liters
-})
+const liters = computed(() => run.value?.result?.liters ?? 0)
 const act = async (fn) => { error.value = ''; try { await fn() } catch (e) { error.value = String(e.message || e) } }
 const voidRun = () => act(async () => { await postJSON(`/api/history/${run.value.id}/void`, {}); await load() })
 const remeasure = () => act(async () => {
@@ -35,7 +31,7 @@ const remeasure = () => act(async () => {
       <p><span class="hero-num">{{ liters }}</span> 升 · 净 {{ run.result.net_m2 }} m² · 涂布率 {{ run.result.coverage }} m²/L · {{ run.result.coats }} 遍</p>
       <p>毛面积 {{ run.result.gross_m2 }} m² · 洞口 {{ run.result.openings_m2 }} m²</p>
       <p>
-        <button @click="voidRun">作废</button>
+        <button v-if="!run.voided" @click="voidRun">作废</button>
         <button @click="remeasure">再测</button>
         <router-link to="/history">返回记录</router-link>
       </p>
