@@ -25,7 +25,7 @@ class PaintService:
         return _parse_run(runs.get(self._c, run_id))
     def void_run(self, run_id):
         if not runs.get(self._c, run_id): return None
-        runs.mark_void(self._c, run_id)
+        if not runs.mark_void(self._c, run_id): return False
         return self.get_run(run_id)
     def remeasure(self, run_id):
         old = runs.get(self._c, run_id)
